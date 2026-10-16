@@ -1,0 +1,24 @@
+
+<div
+  class="bundle-grid__bundle-container"
+  {{ block.shopify_attributes }}
+>
+  {% content_for 'blocks' %}
+</div>
+
+{% schema %}
+{
+  "name": "Bundle container",
+  "blocks": [
+    {
+      "type": "@theme"
+    }
+  ],
+  "settings": [],
+  "presets": [
+    {
+      "name": "Bundle container"
+    }
+  ]
+}
+{% endschema %}

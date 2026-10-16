@@ -1,0 +1,243 @@
+
+<script src="{{ 'bundle-grid.js' | asset_url }}" type="module" fetchpriority="low"></script>
+
+{% liquid
+  assign bundle_width = section.settings.bundle_width
+  assign column_gap = section.settings.column_gap
+
+  if section.settings.background_color != blank
+    render 'contrast-override', background_color: section.settings.background_color, section_id: section.id
+  endif
+%}
+
+<div class="section-background{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"></div>
+
+<bundle-grid
+  class="bundle-grid section spacing-style{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
+  data-section-id="{{ section.id }}"
+  style="
+    {% render 'spacing-style', settings: section.settings %}
+    --bundle-width: {{ bundle_width }}%;
+    --bundle-grid-gap: {{ column_gap }}px;
+  "
+>
+  <button
+    class="bundle-grid__drawer-trigger"
+    type="button"
+    aria-expanded="false"
+    aria-controls="BundleDrawer-{{ section.id }}"
+    data-drawer-open
+  >
+    <span>{{ section.settings.drawer_button_label | escape }}</span>
+    <span aria-hidden="true">+</span>
+  </button>
+
+  <div
+    class="bundle-grid__drawer-overlay"
+    data-drawer-overlay
+    aria-hidden="true"
+  ></div>
+
+  <div class="bundle-grid__layout">
+    {% content_for 'blocks' %}
+  </div>
+</bundle-grid>
+
+{% stylesheet %}
+  bundle-grid {
+    display: block;
+    position: relative;
+    width: 100%;
+  }
+
+  .bundle-grid__layout {
+    display: grid;
+    grid-template-columns: minmax(0, var(--bundle-width)) minmax(0, 1fr);
+    gap: var(--bundle-grid-gap);
+    align-items: start;
+  }
+
+  .bundle-grid__layout > * {
+    min-width: 0;
+  }
+
+  .bundle-grid__grid-container {
+    grid-column: 2;
+    min-width: 0;
+  }
+
+  .bundle-grid__drawer-trigger,
+  .bundle-grid__drawer-overlay {
+    display: none;
+  }
+
+  @media screen and (max-width: 749px) {
+    .bundle-grid__layout {
+      display: block;
+    }
+
+    .bundle-grid__grid-container {
+      width: 100%;
+    }
+
+    .bundle-grid__drawer-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      width: 100%;
+      padding: 16px;
+      margin-bottom: 16px;
+      border: 1px solid rgb(220, 220, 220);
+      border-radius: 8px;
+      background: rgb(255, 255, 255);
+      color: rgb(35, 35, 35);
+      cursor: pointer;
+      font: inherit;
+      text-align: left;
+    }
+
+    .bundle-grid__drawer-overlay {
+      display: block;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgb(0 0 0 / 45%);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 250ms ease, visibility 250ms ease;
+    }
+
+    .bundle-grid__bundle-container {
+      position: fixed;
+      inset-inline: 0;
+      bottom: 0;
+      z-index: 1001;
+      width: 100%;
+      max-height: 85dvh;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      border-radius: 16px 16px 0 0;
+      background: rgb(255, 255, 255);
+      padding: 24px 20px max(24px, env(safe-area-inset-bottom));
+      box-sizing: border-box;
+      transform: translateY(100%);
+      visibility: hidden;
+      pointer-events: none;
+      transition: transform 300ms ease, visibility 300ms ease;
+    }
+
+    .bundle-grid.is-drawer-open .bundle-grid__bundle-container {
+      transform: translateY(0);
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .bundle-grid.is-drawer-open .bundle-grid__drawer-overlay {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .bundle-grid.is-drawer-open {
+      z-index: 1002;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bundle-grid__drawer-overlay,
+      .bundle-grid__bundle-container {
+        transition: none;
+      }
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Bundle and grid",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "blocks": [
+    {
+      "type": "_bundle-container"
+    },
+    {
+      "type": "_grid-container"
+    }
+  ],
+  "settings": [
+    {
+      "type": "range",
+      "id": "bundle_width",
+      "label": "Bundle column width",
+      "min": 20,
+      "max": 45,
+      "step": 1,
+      "unit": "%",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "column_gap",
+      "label": "Column gap",
+      "min": 0,
+      "max": 64,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "text",
+      "id": "drawer_button_label",
+      "label": "Mobile drawer button label",
+      "default": "View your bundle"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color"
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "Top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "Bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    }
+  ],
+  "presets": [
+    {
+      "name": "Bundle and grid",
+      "category": "Products",
+      "blocks": {
+        "bundle": {
+          "type": "_bundle-container"
+        },
+        "grid": {
+          "type": "_grid-container"
+        }
+      },
+      "block_order": ["bundle", "grid"]
+    }
+  ]
+}
+{% endschema %}
