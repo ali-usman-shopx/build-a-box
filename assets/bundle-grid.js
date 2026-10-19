@@ -11,11 +11,16 @@ class BundleGridAddButton extends HTMLElement {
     if (this.initialized) return;
     this.initialized = true;
 
-    this.button = this.querySelector('button');
+    this.input = this.querySelector('[data-quantity-input]');
+    this.decreaseButton = this.querySelector('[data-quantity-decrease]');
+    this.increaseButton = this.querySelector('[data-quantity-increase]');
 
-    this.onClick = () => {
-      if (!this.button || this.button.disabled) return;
+    // Backward compatibility with the original Add to Bundle button.
+    this.button = this.querySelector(
+      'button:not([data-quantity-decrease]):not([data-quantity-increase])'
+    );
 
+    this.productData = () => {
       const price = Number(this.dataset.productPrice);
 
       const detail = {
@@ -37,24 +42,99 @@ class BundleGridAddButton extends HTMLElement {
           '[BundleGridAddButton] Invalid product data:',
           detail
         );
-        return;
+        return null;
       }
 
+      return detail;
+    };
+
+    this.setQuantity = (value) => {
+      if (!this.input || this.input.disabled) return;
+
+      const quantity = Math.max(
+        0,
+        Number.isFinite(Number(value))
+          ? Math.floor(Number(value))
+          : 0
+      );
+
+      this.input.value = quantity;
+      this.input.setAttribute('aria-valuenow', quantity);
+
+      const detail = this.productData();
+      if (!detail) return;
+
       this.dispatchEvent(
-        new CustomEvent('bundle:grid:add-item', {
+        new CustomEvent('bundle:grid:set-quantity', {
           bubbles: true,
           composed: true,
-          detail,
+          detail: { ...detail, quantity },
         })
+      );
+
+      const title = detail.title || 'product';
+
+      this.decreaseButton?.setAttribute(
+        'aria-label',
+        `Remove one ${title}. Current quantity: ${quantity}`
+      );
+
+      this.increaseButton?.setAttribute(
+        'aria-label',
+        `Add one ${title}. Current quantity: ${quantity}`
       );
     };
 
+    this.onDecrease = () => {
+      this.setQuantity(Number(this.input.value || 0) - 1);
+    };
+
+    this.onIncrease = () => {
+      this.setQuantity(Number(this.input.value || 0) + 1);
+    };
+
+    this.onInputChange = () => {
+      this.setQuantity(this.input.value);
+    };
+
+    this.onInput = () => {
+      // Allow typing temporarily; normalize when editing is complete.
+      if (this.input.value !== '' && Number(this.input.value) < 0) {
+        this.input.value = 0;
+      }
+    };
+
+    this.onClick = () => {
+      if (!this.button || this.button.disabled) return;
+      this.setQuantity(Number(this.input?.value || 0) + 1);
+    };
+
+    this.decreaseButton?.addEventListener('click', this.onDecrease);
+    this.increaseButton?.addEventListener('click', this.onIncrease);
+    this.input?.addEventListener('change', this.onInputChange);
+    this.input?.addEventListener('input', this.onInput);
     this.button?.addEventListener('click', this.onClick);
   }
 
   disconnectedCallback() {
+    this.decreaseButton?.removeEventListener('click', this.onDecrease);
+    this.increaseButton?.removeEventListener('click', this.onIncrease);
+    this.input?.removeEventListener('change', this.onInputChange);
+    this.input?.removeEventListener('input', this.onInput);
     this.button?.removeEventListener('click', this.onClick);
+
     this.initialized = false;
+  }
+
+  syncQuantityFromBundle(quantity) {
+    if (!this.input) return;
+  
+    const normalizedQuantity = Math.max(
+      0,
+      Math.floor(Number(quantity) || 0)
+    );
+  
+    this.input.value = String(normalizedQuantity);
   }
 }
 
@@ -81,6 +161,8 @@ class BundleGrid extends HTMLElement {
       this.stateInitialized = true;
     }
 
+    this.initProductSidebar();
+
     this.discountTiers = [];
 
     this.recalculateBundle();
@@ -91,11 +173,35 @@ class BundleGrid extends HTMLElement {
       event.stopPropagation();
     };
 
+    this.onSetQuantity = (event) => {
+      this.setItemQuantity(event.detail);
+      event.stopPropagation();
+    };
+
+    this.addEventListener(
+      'bundle:grid:set-quantity',
+      this.onSetQuantity
+    );
+
     this.addEventListener('bundle:grid:add-item', this.onAddItem);
   }
 
   disconnectedCallback() {
     this.removeEventListener('bundle:grid:add-item', this.onAddItem);
+    this.removeEventListener(
+      'bundle:grid:set-quantity',
+      this.onSetQuantity
+    );
+    
+    this.removeEventListener(
+      'click',
+      this.onProductSidebarClick
+    );
+    document.removeEventListener(
+      'keydown',
+      this.onProductSidebarKeydown
+    );
+    
     this.initialized = false;
   }
 
@@ -170,6 +276,39 @@ class BundleGrid extends HTMLElement {
           ? { ...entry, quantity: entry.quantity - quantity }
           : entry
       );
+    }
+
+    this.recalculateBundle();
+  }
+
+  syncProductQuantities() {
+    if (!Array.isArray(this.items)) return;
+  
+    this.querySelectorAll('bundle-grid-add-button').forEach((picker) => {
+      const item = this.items.find(
+        (item) =>
+          String(item.variantId) === String(picker.dataset.variantId)
+      );
+  
+      picker.syncQuantityFromBundle(item?.quantity ?? 0);
+    });
+  }
+
+  setItemQuantity(detail) {
+    const { variantId, quantity } = detail;
+
+    const index = this.items.findIndex(
+        (item) => String(item.variantId) === String(variantId)
+    );
+
+    if (quantity === 0) {
+        if (index !== -1) {
+        this.items.splice(index, 1);
+        }
+    } else if (index !== -1) {
+        this.items[index].quantity = quantity;
+    } else {
+        this.items.push({ ...detail, quantity });
     }
 
     this.recalculateBundle();
@@ -285,6 +424,8 @@ class BundleGrid extends HTMLElement {
 
     const state = this.getBundleState();
 
+    this.syncProductQuantities();
+
     this.dispatchEvent(
       new CustomEvent('bundle:grid:updated', {
         bubbles: true,
@@ -303,6 +444,145 @@ class BundleGrid extends HTMLElement {
       discountedPrice: this.discountedPrice,
     };
   }
+
+  initProductSidebar() {
+    this.productSidebar = this.querySelector('[data-product-sidebar]');
+    this.productSidebarBackdrop = this.querySelector(
+        '[data-product-sidebar-backdrop]'
+    );
+    this.productSidebarTitle = this.querySelector(
+        '[data-product-sidebar-title]'
+    );
+    this.productSidebarImage = this.querySelector(
+        '[data-product-sidebar-image]'
+    );
+
+    this.productSidebarDescription = this.querySelector(
+        '[data-product-sidebar-description]'
+    );
+
+    this.productSidebarClose = this.querySelector(
+        '[data-product-sidebar-close]'
+    );
+
+    if (
+        !this.productSidebar ||
+        !this.productSidebarBackdrop ||
+        !this.productSidebarTitle ||
+        !this.productSidebarImage ||
+        !this.productSidebarDescription ||
+        !this.productSidebarClose
+    ) {
+        return;
+    }
+
+    this.onProductSidebarClick = (event) => {
+        const infoButton = event.target.closest(
+        '[data-product-info-url]'
+        );
+
+        if (infoButton && this.contains(infoButton)) {
+        this.openProductSidebar(infoButton);
+        return;
+        }
+
+        if (
+        event.target.closest('[data-product-sidebar-close]') ||
+        event.target === this.productSidebarBackdrop
+        ) {
+        this.closeProductSidebar();
+        }
+    };
+
+    this.onProductSidebarKeydown = (event) => {
+        if (
+        event.key === 'Escape' &&
+        this.productSidebar.classList.contains('is-open')
+        ) {
+        this.closeProductSidebar();
+        }
+    };
+
+    this.addEventListener('click', this.onProductSidebarClick);
+    document.addEventListener('keydown', this.onProductSidebarKeydown);
+  }
+
+    async openProductSidebar(button) {
+        const sidebar = this.productSidebar;
+        const productUrl = button.dataset.productInfoUrl;
+
+        this.lastProductInfoButton = button;
+
+        this.productSidebarTitle.textContent = 'Loading…';
+        this.productSidebarDescription.replaceChildren();
+        this.productSidebarImage.hidden = true;
+        this.productSidebarImage.removeAttribute('src');
+        this.productSidebarImage.alt = '';
+
+        sidebar.classList.add('is-open');
+        sidebar.setAttribute('aria-hidden', 'false');
+        sidebar.inert = false;
+
+        this.productSidebarBackdrop.hidden = false;
+        this.productSidebarClose.focus();
+
+        const requestId = (this.productSidebarRequestId || 0) + 1;
+        this.productSidebarRequestId = requestId;
+
+        try {
+            const response = await fetch(
+            `${productUrl.replace(/\/$/, '')}.js`
+            );
+
+            if (!response.ok) {
+            throw new Error(`Product request failed: ${response.status}`);
+            }
+
+            const product = await response.json();
+
+            if (
+            requestId !== this.productSidebarRequestId ||
+            !sidebar.classList.contains('is-open')
+            ) {
+            return;
+            }
+
+            this.productSidebarTitle.textContent = product.title || '';
+            this.productSidebarDescription.innerHTML = product.description || '';
+
+            if (product.featured_image) {
+            this.productSidebarImage.src = product.featured_image;
+            this.productSidebarImage.alt = product.title || '';
+            this.productSidebarImage.hidden = false;
+            }
+        } catch (error) {
+            if (requestId !== this.productSidebarRequestId) return;
+
+            this.productSidebarTitle.textContent =
+            'Unable to load product details.';
+
+            this.productSidebarDescription.replaceChildren();
+
+            console.error(
+            '[BundleGrid] Could not load product details:',
+            error
+            );
+        }
+    }
+
+    closeProductSidebar() {
+      if (!this.productSidebar) return;
+  
+      this.productSidebarRequestId =
+          (this.productSidebarRequestId || 0) + 1;
+  
+      this.productSidebar.classList.remove('is-open');
+      this.productSidebar.setAttribute('aria-hidden', 'true');
+      this.productSidebar.inert = true;
+  
+      this.productSidebarBackdrop.hidden = true;
+      this.lastProductInfoButton?.focus();
+    }
 }
 
 if (!customElements.get('bundle-grid')) {

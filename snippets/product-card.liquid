@@ -119,7 +119,7 @@
     {{ children }}
     {% assign bundle_variant = product.selected_or_first_available_variant %}
 
-    {% if enable_add_to_bundle and bundle_variant != blank %}
+    {% comment %} {% if enable_add_to_bundle and bundle_variant != blank %}
       <bundle-grid-add-button
         data-product-id="{{ product.id }}"
         data-variant-id="{{ bundle_variant.id }}"
@@ -136,8 +136,112 @@
           Add to Bundle
         </button>
       </bundle-grid-add-button>
+    {% endif %} {% endcomment %}
+
+    {% if enable_add_to_bundle and bundle_variant != blank %}
+      <bundle-grid-add-button
+        data-product-id="{{ product.id }}"
+        data-variant-id="{{ bundle_variant.id }}"
+        data-product-title="{{ product.title | escape }}"
+        data-product-price="{{ bundle_variant.price }}"
+        data-product-image="{% if product.featured_image != blank %}{{ product.featured_image | image_url: width: 400 }}{% endif %}"
+        data-product-url="{{ product.url }}"
+      >
+        <div class="bundle-grid__quantity-picker">
+          <button
+            type="button"
+            data-quantity-decrease
+            aria-label="Remove one {{ product.title | escape }}"
+            {% unless bundle_variant.available %}disabled{% endunless %}
+          >
+            <svg viewBox="0 0 24 24" width="15" height="15"
+              stroke="currentColor" stroke-width="2" fill="none"
+              stroke-linecap="round" stroke-linejoin="round"
+              aria-hidden="true">
+              <path d="M5 12h14"></path>
+            </svg>
+          </button>
+
+          <input
+            type="number"
+            min="0"
+            step="1"
+            value="0"
+            data-quantity-input
+            aria-label="Quantity of {{ product.title | escape }}"
+            {% unless bundle_variant.available %}disabled{% endunless %}
+          >
+
+          <button
+            type="button"
+            data-quantity-increase
+            aria-label="Add one {{ product.title | escape }}"
+            {% unless bundle_variant.available %}disabled{% endunless %}
+          >
+            <svg viewBox="0 0 24 24" width="15" height="15"
+              stroke="currentColor" stroke-width="2" fill="none"
+              stroke-linecap="round" stroke-linejoin="round"
+              aria-hidden="true">
+              <path d="M12 5v14m-7-7h14"></path>
+            </svg>
+          </button>
+        </div>
+      </bundle-grid-add-button>
     {% endif %}
   </div>
 </product-card>
 
 {% render 'product-card-styles' %}
+
+{% stylesheet %}
+  .bundle-grid__quantity-picker {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 36px;
+    box-sizing: border-box;
+    border: 1px solid rgba(55, 63, 81, 0.2);
+    border-radius: 8px;
+  }
+
+  .bundle-grid__quantity-picker button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    background-color: rgb(242, 244, 247);
+    color: inherit;
+    cursor: pointer;
+    height: 100%;
+    padding-inline: 20px;
+
+    outline: none !important;
+  }
+
+  .bundle-grid__quantity-picker button:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+
+  .bundle-grid__quantity-picker input {
+    width: 48px;
+    height: 100%;
+    min-width: 0;
+    padding: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: inherit;
+    text-align: center;
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+
+  .bundle-grid__quantity-picker input::-webkit-inner-spin-button,
+  .bundle-grid__quantity-picker input::-webkit-outer-spin-button {
+    margin: 0;
+    -webkit-appearance: none;
+  }
+{% endstylesheet %}

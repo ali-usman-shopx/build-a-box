@@ -5,6 +5,7 @@
   assign columns_mobile = block.settings.columns_mobile | default: 2
   assign grid_gap = block.settings.grid_gap | default: 24
   assign products_per_collection = block.settings.products_per_collection | default: 8
+  assign enable_add_to_bundle = true
 %}
 
 <div
@@ -38,6 +39,41 @@
                         sizes: '(min-width: 990px) 25vw, 50vw',
                         alt: product.featured_media.alt
                     }}
+                    {% if enable_add_to_bundle %}
+                        <button
+                            type="button"
+                            class="bundle-grid__product-info-button"
+                            data-product-info-url="{{ product.url | escape }}"
+                            aria-label="Learn more about {{ product.title | escape }}"
+                            aria-haspopup="dialog"
+                            aria-controls="bundle-grid-product-sidebar"
+                            style="outline: none !important;"
+                        >
+                            <svg
+                            width="32"
+                            height="32"
+                            viewBox="0 0 32 32"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            aria-hidden="true"
+                            >
+                            <rect
+                                width="32"
+                                height="32"
+                                rx="6"
+                                fill="white"
+                                fill-opacity="0.8"
+                            />
+                            <path
+                                d="M11 21L21 11M21 11H14.3333M21 11V17.6667"
+                                stroke="#373F51"
+                                stroke-width="1.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            />
+                            </svg>
+                        </button>
+                        {% endif %}
                   </div>
                 {% endif %}
 
@@ -66,14 +102,14 @@
 
               {% assign product_card_instance_id = product_card_instance_id | strip %}
 
-            {% render 'product-card',
-            product: product,
-            children: product_card_children,
-            block: block,
-            product_card_gap: 12,
-            product_card_instance_id: product_card_instance_id,
-            enable_add_to_bundle: true
-            %}
+              {% render 'product-card',
+                  product: product,
+                  children: product_card_children,
+                  block: block,
+                  product_card_gap: 12,
+                  product_card_instance_id: product_card_instance_id,
+                  enable_add_to_bundle: enable_add_to_bundle
+              %}
             {% endfor %}
           </div>
         {% else %}
@@ -85,8 +121,193 @@
     {% endif %}
   {% endfor %}
 
+  {% if enable_add_to_bundle %}
+    <div
+        class="bundle-grid__sidebar-backdrop"
+        data-product-sidebar-backdrop
+        hidden
+    ></div>
+
+    <aside
+        id="bundle-grid-product-sidebar"
+        class="bundle-grid__product-sidebar"
+        data-product-sidebar
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="bundle-grid-product-sidebar-title"
+        aria-hidden="true"
+        tabindex="-1"
+        inert
+    >
+        <button
+            type="button"
+            class="bundle-grid__sidebar-close"
+            data-product-sidebar-close
+            aria-label="Close product details"
+        >
+            <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+            >
+            <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+            </svg>
+        </button>
+
+        <img
+            class="bundle-grid__sidebar-image"
+            data-product-sidebar-image
+            alt=""
+            hidden
+            width="auto"
+            height="auto"
+        >
+
+        <h2
+            id="bundle-grid-product-sidebar-title"
+            class="bundle-grid__sidebar-title"
+            data-product-sidebar-title
+        ></h2>
+
+        <div
+            class="bundle-grid__sidebar-description"
+            data-product-sidebar-description
+        ></div>
+    </aside>
+    {% endif %}
+
   {% content_for 'blocks' %}
 </div>
+
+{% stylesheet %}
+  /* Product image info button */
+  .bundle-grid__product-media {
+    position: relative;
+  }
+  
+  .bundle-grid__product-info-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1;
+    display: block;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+  }
+  
+  /* Sidebar backdrop */
+  .bundle-grid__sidebar-backdrop {
+    position: fixed;
+    top: calc(var(--header-height) - 5px) !important;
+    inset: 0;
+    z-index: 99998;
+    background: rgb(0 0 0 / 40%);
+  }
+  
+  .bundle-grid__sidebar-backdrop[hidden] {
+    display: none;
+  }
+  
+  /* Right-side sidebar */
+    .bundle-grid__product-sidebar {
+        position: fixed;
+        top: calc(var(--header-height) - 5px);
+        right: 0;
+        z-index: 99999;
+        width: min(480px, 100%);
+        /* height: 100%; */
+        /* height: 100dvh; */
+        height: calc(100dvh - var(--header-height, 80px));
+        box-sizing: border-box;
+        overflow-y: auto;
+        overflow-x: hidden;
+        overflow-wrap: break-word;
+        padding: 1em 2em 2em;
+        background: #fff;
+        color: #000;
+        transform: translateX(100%);
+        visibility: hidden;
+        transition:
+            transform 300ms ease-in-out,
+            visibility 300ms ease-in-out;
+    }
+
+    .bundle-grid__product-sidebar.is-open {
+    transform: translateX(0);
+    visibility: visible;
+    }
+
+    .bundle-grid__sidebar-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    padding: 4px;
+    border: none;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    }
+
+    .bundle-grid__sidebar-close svg {
+    display: block;
+    width: 24px;
+    height: 24px;
+    }
+
+    .bundle-grid__sidebar-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-top: 0;
+    object-fit: contain;
+    }
+
+    .bundle-grid__sidebar-image[hidden] {
+    display: none;
+    }
+
+    .bundle-grid__sidebar-title {
+    margin: 16px 0 0;
+    color: #000;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: center;
+    }
+
+    .bundle-grid__sidebar-description {
+    width: 100%;
+    margin-top: 16px;
+    font-size: 16px;
+    line-height: 1.5;
+    overflow-wrap: break-word;
+    }
+
+    .bundle-grid__sidebar-description p:first-child {
+    margin-top: 0;
+    }
+
+    .bundle-grid__sidebar-description p:last-child {
+    margin-bottom: 0;
+    }
+
+    @media (max-width: 480px) {
+    .bundle-grid__product-sidebar {
+        padding: 1em 24px 2em;
+    }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+    .bundle-grid__product-sidebar {
+        transition: none;
+    }
+    }
+{% endstylesheet %}
 
 {% schema %}
 {

@@ -323,6 +323,7 @@
       position: fixed;
       inset-inline: 0;
       bottom: 0;
+      top: auto;
       z-index: 1001;
       width: 100%;
       max-height: 85dvh;
@@ -330,7 +331,7 @@
       box-sizing: border-box;
       overflow: hidden;
       background: #fff;
-      border-radius: 16px 16px 0 0;
+      border-radius: 24px 24px 0 0;
       box-shadow: 0 -4px 20px rgb(0 0 0 / 10%);
     }
 
@@ -343,6 +344,7 @@
     /* Keep the toggle visible at all times. */
     .bundle-grid-summary__mobile-header {
       display: flex;
+      justify-content: center;
       flex: 0 0 auto;
       margin-bottom: 12px;
     }
@@ -379,11 +381,13 @@
       The footer remains outside this animated region.
     */
     .bundle-grid-summary__items {
+      display: flex;
+      flex-direction: row;
       flex: 0 1 auto;
       max-height: 0;
       gap: 20px;
       padding: 0 6px;
-      overflow-x: hidden;
+      overflow-x: auto;
       overflow-y: auto;
       opacity: 0;
       overscroll-behavior: contain;
@@ -417,9 +421,9 @@
       grid-template-columns: minmax(0, 1fr) auto;
       align-items: center;
       gap: 12px;
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid #e5e5e5;
+      margin-top: 0px;
+      padding-top: 0px;
+      border-top: none;
     }
 
     /*
