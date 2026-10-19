@@ -294,10 +294,209 @@
         "padding-block-start": 48,
         "padding-block-end": 48
       }
+    },
+    "bundle_grid_7hwwTz": {
+      "type": "bundle-grid",
+      "blocks": {
+        "bundle_container_qzEErQ": {
+          "type": "_bundle-container",
+          "settings": {},
+          "blocks": {
+            "icon_7irh3Q": {
+              "type": "icon",
+              "name": "t:names.icon",
+              "settings": {
+                "icon": "price_tag",
+                "width": 24,
+                "link": "",
+                "open_in_new_tab": false,
+                "icon_color": ""
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "icon_7irh3Q"
+          ]
+        },
+        "grid_container_9N8aRA": {
+          "type": "_grid-container",
+          "settings": {
+            "collections": [
+              "bushcraft-cooking-knives",
+              "cookbooks",
+              "featured-knives"
+            ],
+            "products_per_collection": 8,
+            "columns_desktop": 3,
+            "columns_mobile": "2",
+            "grid_gap": 24
+          },
+          "blocks": {
+            "product_recommendations_pm67yP": {
+              "type": "product-recommendations",
+              "name": "t:names.product_recommendations",
+              "disabled": true,
+              "settings": {
+                "recommendation_type": "related",
+                "layout_type": "grid",
+                "carousel_on_mobile": false,
+                "max_products": 4,
+                "columns_gap": 16,
+                "rows_gap": 16,
+                "icons_style": "arrow",
+                "icons_shape": "none",
+                "gap": 12,
+                "border_radius": 0,
+                "background_color": "",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {
+                "text_fjaHGG": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<h2>You may also like</h2>",
+                    "width": "fit-content",
+                    "max_width": "normal",
+                    "alignment": "left",
+                    "type_preset": "rte",
+                    "font": "var(--font-body--family)",
+                    "font_size": "1rem",
+                    "line_height": "normal",
+                    "letter_spacing": "normal",
+                    "case": "none",
+                    "wrap": "pretty",
+                    "text_color": "",
+                    "background": false,
+                    "background_color": "#00000026",
+                    "corner_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                },
+                "static-product-card": {
+                  "type": "_product-card",
+                  "static": true,
+                  "settings": {
+                    "product_card_gap": 4,
+                    "background_color": "",
+                    "border": "none",
+                    "border_width": 1,
+                    "border_opacity": 100,
+                    "border_color": "",
+                    "border_radius": 0,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {
+                    "product_card_gallery_w9EFgb": {
+                      "type": "_product-card-gallery",
+                      "settings": {
+                        "image_ratio": "adapt",
+                        "border": "none",
+                        "border_width": 1,
+                        "border_opacity": 100,
+                        "border_color": "",
+                        "border_radius": 0,
+                        "padding-block-start": 0,
+                        "padding-block-end": 0,
+                        "padding-inline-start": 0,
+                        "padding-inline-end": 0
+                      },
+                      "blocks": {}
+                    },
+                    "product_title_66qpxn": {
+                      "type": "product-title",
+                      "name": "t:names.product_title",
+                      "settings": {
+                        "width": "fit-content",
+                        "max_width": "normal",
+                        "alignment": "left",
+                        "type_preset": "paragraph",
+                        "font": "var(--font-body--family)",
+                        "font_size": "1rem",
+                        "line_height": "normal",
+                        "letter_spacing": "normal",
+                        "case": "none",
+                        "wrap": "pretty",
+                        "text_color": "",
+                        "background": false,
+                        "background_color": "#00000026",
+                        "corner_radius": 0,
+                        "padding-block-start": 4,
+                        "padding-block-end": 0,
+                        "padding-inline-start": 0,
+                        "padding-inline-end": 0
+                      },
+                      "blocks": {}
+                    },
+                    "price_LR7CAt": {
+                      "type": "price",
+                      "name": "t:names.product_price",
+                      "settings": {
+                        "show_sale_price_first": true,
+                        "show_installments": false,
+                        "show_tax_info": false,
+                        "type_preset": "h6",
+                        "width": "100%",
+                        "alignment": "left",
+                        "font": "var(--font-body--family)",
+                        "font_size": "1rem",
+                        "line_height": "normal",
+                        "letter_spacing": "normal",
+                        "case": "none",
+                        "text_color": "",
+                        "padding-block-start": 0,
+                        "padding-block-end": 0,
+                        "padding-inline-start": 0,
+                        "padding-inline-end": 0
+                      },
+                      "blocks": {}
+                    }
+                  },
+                  "block_order": [
+                    "product_card_gallery_w9EFgb",
+                    "product_title_66qpxn",
+                    "price_LR7CAt"
+                  ]
+                }
+              },
+              "block_order": [
+                "text_fjaHGG"
+              ]
+            }
+          },
+          "block_order": [
+            "product_recommendations_pm67yP"
+          ]
+        }
+      },
+      "block_order": [
+        "bundle_container_qzEErQ",
+        "grid_container_9N8aRA"
+      ],
+      "name": "Bundle and grid",
+      "settings": {
+        "bundle_width": 30,
+        "column_gap": 24,
+        "drawer_button_label": "View your bundle",
+        "background_color": "",
+        "padding-block-start": 24,
+        "padding-block-end": 24
+      }
     }
   },
   "order": [
     "hero_jVaWmY",
-    "product_list_fa6P9H"
+    "product_list_fa6P9H",
+    "bundle_grid_7hwwTz"
   ]
 }

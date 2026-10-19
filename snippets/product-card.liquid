@@ -8,6 +8,8 @@
   @param {object} [block] - The block object
   @param {number} [product_card_gap] - The gap between the product card children (overrides block settings)
   @param {string} [product_view_context] - The context in which the product card is being rendered. Used for standard events.
+  @param {string} [product_card_instance_id] - ID
+  @param {boolean} [enable_add_to_bundle] - Bundle FF
 {%- enddoc -%}
 
 {% assign block_settings = block.settings %}
@@ -63,7 +65,8 @@
   class="product-card size-style"
   style="{% render 'size-style', settings: block_settings %}"
   data-product-id="{{ product.id }}"
-  id="product-card-{{ block.id }}"
+  {% comment %} id="product-card-{{ block.id }}" {% endcomment %}
+  id="product-card-{{ product_card_instance_id | default: block.id }}"
   {% if settings.transition_to_main_product %}
     data-product-transition="true"
     data-featured-media-url="{{ featured_media_url }}"
@@ -114,6 +117,26 @@
     "
   >
     {{ children }}
+    {% assign bundle_variant = product.selected_or_first_available_variant %}
+
+    {% if enable_add_to_bundle and bundle_variant != blank %}
+      <bundle-grid-add-button
+        data-product-id="{{ product.id }}"
+        data-variant-id="{{ bundle_variant.id }}"
+        data-product-title="{{ product.title | escape }}"
+        data-product-price="{{ bundle_variant.price }}"
+        data-product-image="{% if product.featured_image != blank %}{{ product.featured_image | image_url: width: 400 }}{% endif %}"
+        data-product-url="{{ product.url }}"
+      >
+        <button
+          type="button"
+          class="bundle-grid__add-button"
+          {% unless bundle_variant.available %}disabled{% endunless %}
+        >
+          Add to Bundle
+        </button>
+      </bundle-grid-add-button>
+    {% endif %}
   </div>
 </product-card>
 

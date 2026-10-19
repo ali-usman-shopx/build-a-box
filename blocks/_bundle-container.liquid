@@ -1,10 +1,508 @@
 
 <div
+  id="BundleDrawer-{{ section.id }}"
   class="bundle-grid__bundle-container"
   {{ block.shopify_attributes }}
 >
+  <bundle-grid-summary class="bundle-grid-summary">
+    <!-- Mobile-only toggle; summary values are not duplicated. -->
+    <div class="bundle-grid-summary__mobile-header">
+      <button
+        type="button"
+        class="bundle-grid-summary__toggle"
+        data-bundle-toggle
+        aria-expanded="false"
+        aria-controls="BundleItems-{{ section.id }}"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          class="bundle-grid-summary__toggle-icon"
+        >
+          <path d="m7 14 5-5 5 5z"></path>
+        </svg>
+
+        <span data-bundle-toggle-label>Show items</span>
+      </button>
+    </div>
+
+    <!-- Desktop heading; hidden on mobile. -->
+    <div class="bundle-grid-summary__heading">
+      <h2>Your box</h2>
+    </div>
+
+    <!-- One product list for desktop and the mobile drawer. -->
+    <div
+      id="BundleItems-{{ section.id }}"
+      class="bundle-grid-summary__items"
+      data-bundle-items
+      aria-live="polite"
+    >
+      <p class="bundle-grid-summary__empty">
+        Your box is empty. Add products to get started.
+      </p>
+    </div>
+
+    <!-- One set of totals and one Next button for both layouts. -->
+    <div class="bundle-grid-summary__footer">
+      <div class="bundle-grid-summary__total-row bundle-grid-summary__total-row--items">
+        <span>Items</span>
+        <span data-bundle-total-items>0</span>
+      </div>
+
+      <div class="bundle-grid-summary__total-row bundle-grid-summary__total-row--discount">
+        <span>Discount</span>
+        <span data-bundle-discount>$0.00</span>
+      </div>
+
+      <div class="bundle-grid-summary__total-row bundle-grid-summary__subtotal">
+        <span>Subtotal</span>
+
+        <span class="bundle-grid-summary__subtotal-prices">
+          <s data-bundle-original-total hidden></s>
+          <span data-bundle-subtotal>$0.00</span>
+        </span>
+      </div>
+
+      <button
+        type="button"
+        class="bundle-grid-summary__next"
+        data-bundle-next
+        disabled
+      >
+        Next
+      </button>
+    </div>
+  </bundle-grid-summary>
+
   {% content_for 'blocks' %}
 </div>
+
+{% stylesheet %}
+  /* =========================================================
+     1. SUMMARY BASE
+     Preserve the existing desktop summary dimensions.
+  ========================================================= */
+
+  .bundle-grid__bundle-container {
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .bundle-grid-summary {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+    height: 70vh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* The mobile toggle is hidden on desktop. */
+  .bundle-grid-summary__mobile-header {
+    display: none;
+  }
+
+  .bundle-grid-summary__heading {
+    flex: 0 0 auto;
+    margin-block: 12px;
+  }
+
+  .bundle-grid-summary__heading h2 {
+    margin: 0;
+    color: #000;
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  /* =========================================================
+     2. PRODUCT LIST
+     Desktop: scrollable list within the fixed-height summary.
+     Mobile: collapsed drawer, expanded by the toggle.
+  ========================================================= */
+
+  .bundle-grid-summary__items {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+    min-height: 0;
+    padding: 8px 6px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+
+  .bundle-grid-summary__empty {
+    margin: 0;
+    padding-block: 16px;
+    color: #666;
+    font-size: 14px;
+    text-align: center;
+  }
+
+  .bundle-grid-summary__item {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .bundle-grid-summary__item-media {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    flex: 0 0 100px;
+  }
+
+  .bundle-grid-summary__item-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+
+  .bundle-grid-summary__item-placeholder {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: #f2f2f2;
+    border-radius: 4px;
+  }
+
+  .bundle-grid-summary__quantity {
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    color: #fff;
+    background: #000;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 400;
+  }
+
+  .bundle-grid-summary__remove {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    color: #000;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .bundle-grid-summary__remove svg {
+    display: block;
+    width: 12px;
+    height: 12px;
+  }
+
+  .bundle-grid-summary__item-title {
+    max-width: 110px;
+    color: #000;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.4;
+    text-align: center;
+    overflow-wrap: anywhere;
+  }
+
+  .bundle-grid-summary__item-prices {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: baseline;
+    gap: 4px;
+    max-width: 110px;
+    color: #000;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .bundle-grid-summary__item-current-price {
+    color: #000;
+  }
+
+  .bundle-grid-summary__item-current-price.is-discounted {
+    color: #ea6f61;
+  }
+
+  .bundle-grid-summary__item-original-price {
+    color: #888;
+  }
+
+  /* =========================================================
+     3. TOTALS AND FOOTER
+     A single set of elements serves desktop and mobile.
+  ========================================================= */
+
+  .bundle-grid-summary__footer {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e5e5;
+  }
+
+  .bundle-grid-summary__total-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    color: #000;
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .bundle-grid-summary__subtotal-prices {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .bundle-grid-summary__subtotal-prices > s {
+    color: #888;
+    font-size: 0.9em;
+    font-weight: 400;
+  }
+
+  .bundle-grid-summary__subtotal [data-bundle-subtotal].is-discounted {
+    color: #ea6f61;
+  }
+
+  .bundle-grid-summary__next {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 16px;
+    color: #fff;
+    background: #000;
+    border: 0;
+    border-radius: 4px;
+    font: inherit;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .bundle-grid-summary__next:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+
+  /* =========================================================
+     4. MOBILE BOTTOM SUMMARY
+     The container stays fixed at the bottom. The item list
+     expands upward, while totals and Next remain visible.
+  ========================================================= */
+
+  @media screen and (max-width: 749px) {
+    .bundle-grid__bundle-container {
+      position: fixed;
+      inset-inline: 0;
+      bottom: 0;
+      z-index: 1001;
+      width: 100%;
+      max-height: 85dvh;
+      padding: 16px 20px max(16px, env(safe-area-inset-bottom));
+      box-sizing: border-box;
+      overflow: hidden;
+      background: #fff;
+      border-radius: 16px 16px 0 0;
+      box-shadow: 0 -4px 20px rgb(0 0 0 / 10%);
+    }
+
+    .bundle-grid-summary {
+      height: auto;
+      max-height: calc(85dvh - 32px);
+      overflow: hidden;
+    }
+
+    /* Keep the toggle visible at all times. */
+    .bundle-grid-summary__mobile-header {
+      display: flex;
+      flex: 0 0 auto;
+      margin-bottom: 12px;
+    }
+
+    .bundle-grid-summary__toggle {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      width: fit-content;
+      padding: 0;
+      color: #000;
+      background: transparent;
+      border: 0;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .bundle-grid-summary__toggle-icon {
+      width: 24px;
+      height: 24px;
+      fill: currentColor;
+      transition: transform 250ms ease;
+    }
+
+    /* Desktop heading isn't needed in the mobile drawer. */
+    .bundle-grid-summary__heading {
+      display: none;
+    }
+
+    /*
+      Collapsed drawer: animate the list to zero height.
+      The footer remains outside this animated region.
+    */
+    .bundle-grid-summary__items {
+      flex: 0 1 auto;
+      max-height: 0;
+      gap: 20px;
+      padding: 0 6px;
+      overflow-x: hidden;
+      overflow-y: auto;
+      opacity: 0;
+      overscroll-behavior: contain;
+      scrollbar-gutter: auto;
+      transition:
+        max-height 300ms ease,
+        padding 300ms ease,
+        opacity 200ms ease;
+    }
+
+    /*
+      Expanded drawer: the list slides open above the
+      permanently visible totals and Next button.
+    */
+    .bundle-grid__bundle-container.is-expanded
+      .bundle-grid-summary__items {
+      max-height: 38dvh;
+      padding-block: 8px;
+      opacity: 1;
+    }
+
+    .bundle-grid-summary__item-media {
+      width: 88px;
+      height: 88px;
+      flex-basis: 88px;
+    }
+
+    /* Keep the footer visible in both states. */
+    .bundle-grid-summary__footer {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #e5e5e5;
+    }
+
+    /*
+      First row: Total (N items).
+      CSS-generated text lets the existing count value work
+      for both layouts without creating another count element.
+    */
+    .bundle-grid-summary__total-row--items {
+      grid-column: 1;
+      grid-row: 1;
+      justify-content: flex-start;
+      gap: 4px;
+      font-size: 14px;
+    }
+
+    .bundle-grid-summary__total-row--items > span:first-child {
+      display: none;
+    }
+
+    .bundle-grid-summary__total-row--items
+      [data-bundle-total-items]::before {
+      content: "Total (";
+    }
+
+    .bundle-grid-summary__total-row--items
+      [data-bundle-total-items]::after {
+      content: " items)";
+    }
+
+    /* The separate discount row is unnecessary on mobile. */
+    .bundle-grid-summary__total-row--discount {
+      display: none;
+    }
+
+    /* The discounted price and optional original price sit right. */
+    .bundle-grid-summary__subtotal {
+      grid-column: 2;
+      grid-row: 1;
+      justify-content: flex-end;
+      gap: 0;
+      font-size: 14px;
+    }
+
+    .bundle-grid-summary__subtotal > span:first-child {
+      display: none;
+    }
+
+    .bundle-grid-summary__subtotal-prices {
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .bundle-grid-summary__subtotal-prices > s[hidden] {
+      display: none;
+    }
+
+    .bundle-grid-summary__next {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      width: 100%;
+      min-height: 48px;
+      font-size: 14px;
+    }
+
+    /* Rotate the chevron to indicate the expanded state. */
+    .bundle-grid__bundle-container.is-expanded
+      .bundle-grid-summary__toggle-icon {
+      transform: rotate(180deg);
+    }
+  }
+
+  /* =========================================================
+     5. ACCESSIBILITY
+     Respect the visitor's reduced-motion preference.
+  ========================================================= */
+
+  @media (prefers-reduced-motion: reduce) {
+    .bundle-grid-summary__toggle-icon,
+    .bundle-grid-summary__items {
+      transition: none;
+    }
+  }
+{% endstylesheet %}
 
 {% schema %}
 {

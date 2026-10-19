@@ -1,8 +1,90 @@
 
+{% liquid
+  assign collections = block.settings.collections
+  assign columns_desktop = block.settings.columns_desktop | default: 3
+  assign columns_mobile = block.settings.columns_mobile | default: 2
+  assign grid_gap = block.settings.grid_gap | default: 24
+  assign products_per_collection = block.settings.products_per_collection | default: 8
+%}
+
 <div
   class="bundle-grid__grid-container"
+  style="
+    --collection-grid-columns: {{ columns_desktop }};
+    --collection-grid-columns-mobile: {{ columns_mobile }};
+    --collection-grid-gap: {{ grid_gap }}px;
+  "
   {{ block.shopify_attributes }}
 >
+  {% for collection in collections %}
+    {% if collection != blank %}
+      <section class="bundle-grid__collection">
+        <h2 class="bundle-grid__collection-heading">
+          {{ collection.title | escape }}
+        </h2>
+
+        {% if collection.products_count > 0 %}
+          <div class="bundle-grid__product-grid">
+            {% for product in collection.products limit: products_per_collection %}
+              {% capture product_card_children %}
+                {% if product.featured_media != blank %}
+                  <div class="bundle-grid__product-media">
+                    {{
+                      product.featured_media.preview_image
+                      | image_url: width: 800
+                      | image_tag:
+                        loading: 'lazy',
+                        widths: '240, 360, 480, 640, 800',
+                        sizes: '(min-width: 990px) 25vw, 50vw',
+                        alt: product.featured_media.alt
+                    }}
+                  </div>
+                {% endif %}
+
+                <div class="bundle-grid__product-details">
+                  <h3 class="bundle-grid__product-title">
+                    {{ product.title | escape }}
+                  </h3>
+
+                  <div class="bundle-grid__product-price">
+                    {% if product.price_varies %}
+                      From {{ product.price_min | money }}
+                    {% else %}
+                      {{ product.price | money }}
+                    {% endif %}
+
+                    {% if product.compare_at_price > product.price %}
+                      <s>{{ product.compare_at_price | money }}</s>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endcapture %}
+
+              {% capture product_card_instance_id %}
+                {{ block.id }}-{{ collection.id }}-{{ product.id }}
+              {% endcapture %}
+
+              {% assign product_card_instance_id = product_card_instance_id | strip %}
+
+            {% render 'product-card',
+            product: product,
+            children: product_card_children,
+            block: block,
+            product_card_gap: 12,
+            product_card_instance_id: product_card_instance_id,
+            enable_add_to_bundle: true
+            %}
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="bundle-grid__empty-collection">
+            No products in this collection yet.
+          </p>
+        {% endif %}
+      </section>
+    {% endif %}
+  {% endfor %}
+
   {% content_for 'blocks' %}
 </div>
 
@@ -14,7 +96,57 @@
       "type": "@theme"
     }
   ],
-  "settings": [],
+  "settings": [
+    {
+      "type": "collection_list",
+      "id": "collections",
+      "label": "Collections"
+    },
+    {
+      "type": "range",
+      "id": "products_per_collection",
+      "label": "Products per collection",
+      "min": 1,
+      "max": 24,
+      "step": 1,
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Desktop columns",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Mobile columns",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "range",
+      "id": "grid_gap",
+      "label": "Grid gap",
+      "min": 0,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    }
+  ],
   "presets": [
     {
       "name": "Grid container"

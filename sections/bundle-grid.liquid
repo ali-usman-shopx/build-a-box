@@ -1,16 +1,24 @@
 
-<script src="{{ 'bundle-grid.js' | asset_url }}" type="module" fetchpriority="low"></script>
+<script
+  src="{{ 'bundle-grid.js' | asset_url }}"
+  type="module"
+  fetchpriority="low"
+></script>
 
 {% liquid
   assign bundle_width = section.settings.bundle_width
   assign column_gap = section.settings.column_gap
 
   if section.settings.background_color != blank
-    render 'contrast-override', background_color: section.settings.background_color, section_id: section.id
+    render 'contrast-override',
+      background_color: section.settings.background_color,
+      section_id: section.id
   endif
 %}
 
-<div class="section-background{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"></div>
+<div
+  class="section-background{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
+></div>
 
 <bundle-grid
   class="bundle-grid section spacing-style{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
@@ -21,134 +29,196 @@
     --bundle-grid-gap: {{ column_gap }}px;
   "
 >
-  <button
-    class="bundle-grid__drawer-trigger"
-    type="button"
-    aria-expanded="false"
-    aria-controls="BundleDrawer-{{ section.id }}"
-    data-drawer-open
-  >
-    <span>{{ section.settings.drawer_button_label | escape }}</span>
-    <span aria-hidden="true">+</span>
-  </button>
-
-  <div
-    class="bundle-grid__drawer-overlay"
-    data-drawer-overlay
-    aria-hidden="true"
-  ></div>
-
   <div class="bundle-grid__layout">
     {% content_for 'blocks' %}
   </div>
 </bundle-grid>
 
 {% stylesheet %}
+  /* =========================================================
+     1. SECTION ROOT
+  ========================================================= */
+
   bundle-grid {
     display: block;
     position: relative;
     width: 100%;
   }
 
+  /* =========================================================
+     2. DESKTOP TWO-COLUMN LAYOUT
+     Preserve the existing grid and column proportions.
+  ========================================================= */
+
   .bundle-grid__layout {
     display: grid;
-    grid-template-columns: minmax(0, var(--bundle-width)) minmax(0, 1fr);
+    grid-template-columns:
+      minmax(0, var(--bundle-width))
+      minmax(0, 1fr);
     gap: var(--bundle-grid-gap);
-    align-items: start;
+    align-items: stretch;
   }
 
   .bundle-grid__layout > * {
     min-width: 0;
   }
 
+  /* =========================================================
+     3. DESKTOP STICKY SUMMARY
+  ========================================================= */
+
+  .bundle-grid__bundle-container {
+    position: sticky;
+    top: 24px;
+    align-self: start;
+    min-width: 0;
+  }
+
+  /* =========================================================
+     4. PRODUCT GRID COLUMN
+  ========================================================= */
+
   .bundle-grid__grid-container {
     grid-column: 2;
     min-width: 0;
   }
 
-  .bundle-grid__drawer-trigger,
-  .bundle-grid__drawer-overlay {
-    display: none;
+  /* =========================================================
+     5. COLLECTION SPACING AND HEADINGS
+  ========================================================= */
+
+  .bundle-grid__collection + .bundle-grid__collection {
+    margin-block-start: 40px;
   }
+
+  .bundle-grid__collection-heading {
+    margin: 0 0 20px;
+  }
+
+  /* =========================================================
+     6. PRODUCT GRID
+  ========================================================= */
+
+  .bundle-grid__product-grid {
+    display: grid;
+    grid-template-columns: repeat(
+      var(--collection-grid-columns, 3),
+      minmax(0, 1fr)
+    );
+    gap: var(--collection-grid-gap, 24px);
+    align-items: start;
+  }
+
+  /* =========================================================
+     7. PRODUCT MEDIA
+  ========================================================= */
+
+  .bundle-grid__product-media {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .bundle-grid__product-media img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* =========================================================
+     8. PRODUCT DETAILS AND PRICES
+  ========================================================= */
+
+  .bundle-grid__product-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .bundle-grid__product-title {
+    margin: 0;
+    font-size: inherit;
+    font-weight: 500;
+  }
+
+  .bundle-grid__product-price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .bundle-grid__product-price s {
+    opacity: 0.65;
+  }
+
+  /* =========================================================
+     9. EMPTY COLLECTION STATE
+  ========================================================= */
+
+  .bundle-grid__empty-collection {
+    margin: 0;
+  }
+
+  /* =========================================================
+     10. MOBILE LAYOUT
+     Reverse the visual order so the bundle is at the bottom
+     and the product grid is above it.
+  ========================================================= */
 
   @media screen and (max-width: 749px) {
     .bundle-grid__layout {
-      display: block;
-    }
-
-    .bundle-grid__grid-container {
-      width: 100%;
-    }
-
-    .bundle-grid__drawer-trigger {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
+      flex-direction: column-reverse;
+      align-items: stretch;
+      gap: 0;
+      padding-bottom: calc(150px + env(safe-area-inset-bottom));
+    }
+
+    .bundle-grid__layout > * {
       width: 100%;
-      padding: 16px;
-      margin-bottom: 16px;
-      border: 1px solid rgb(220, 220, 220);
-      border-radius: 8px;
-      background: rgb(255, 255, 255);
-      color: rgb(35, 35, 35);
-      cursor: pointer;
-      font: inherit;
-      text-align: left;
+      min-width: 0;
     }
 
-    .bundle-grid__drawer-overlay {
-      display: block;
-      position: fixed;
-      inset: 0;
-      z-index: 1000;
-      background: rgb(0 0 0 / 45%);
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-      transition: opacity 250ms ease, visibility 250ms ease;
-    }
-
-    .bundle-grid__bundle-container {
+    /*
+      This higher-specificity rule overrides the desktop
+      sticky positioning from the parent section.
+    */
+    .bundle-grid__layout > .bundle-grid__bundle-container {
       position: fixed;
       inset-inline: 0;
       bottom: 0;
-      z-index: 1001;
+      top: auto;
+      align-self: auto;
+    }
+
+    .bundle-grid__grid-container {
+      grid-column: auto;
       width: 100%;
-      max-height: 85dvh;
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      border-radius: 16px 16px 0 0;
-      background: rgb(255, 255, 255);
-      padding: 24px 20px max(24px, env(safe-area-inset-bottom));
-      box-sizing: border-box;
-      transform: translateY(100%);
-      visibility: hidden;
-      pointer-events: none;
-      transition: transform 300ms ease, visibility 300ms ease;
     }
 
-    .bundle-grid.is-drawer-open .bundle-grid__bundle-container {
-      transform: translateY(0);
-      visibility: visible;
-      pointer-events: auto;
+    .bundle-grid__product-grid {
+      grid-template-columns: repeat(
+        var(--collection-grid-columns-mobile, 2),
+        minmax(0, 1fr)
+      );
     }
 
-    .bundle-grid.is-drawer-open .bundle-grid__drawer-overlay {
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
+    .bundle-grid__collection + .bundle-grid__collection {
+      margin-block-start: 32px;
     }
 
-    .bundle-grid.is-drawer-open {
-      z-index: 1002;
+    .bundle-grid__collection-heading {
+      margin-block-end: 16px;
     }
+  }
 
-    @media (prefers-reduced-motion: reduce) {
-      .bundle-grid__drawer-overlay,
-      .bundle-grid__bundle-container {
-        transition: none;
-      }
+  /* =========================================================
+     11. ACCESSIBILITY
+  ========================================================= */
+
+  @media (prefers-reduced-motion: reduce) {
+    .bundle-grid__bundle-container {
+      scroll-behavior: auto;
     }
   }
 {% endstylesheet %}
@@ -187,12 +257,6 @@
       "step": 2,
       "unit": "px",
       "default": 24
-    },
-    {
-      "type": "text",
-      "id": "drawer_button_label",
-      "label": "Mobile drawer button label",
-      "default": "View your bundle"
     },
     {
       "type": "color",
