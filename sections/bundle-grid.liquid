@@ -9,13 +9,13 @@
   assign bundle_width = section.settings.bundle_width
   assign column_gap = section.settings.column_gap
 
-  if section.settings.background_color != blank
-    render 'contrast-override',
-      background_color: section.settings.background_color,
-      section_id: section.id
-  endif
 %}
 
+{% comment %} if section.settings.background_color != blank
+  render 'contrast-override',
+    background_color: section.settings.background_color,
+    section_id: section.id
+endif {% endcomment %}
 <div
   class="section-background{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
 ></div>

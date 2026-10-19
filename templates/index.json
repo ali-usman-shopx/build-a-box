@@ -301,23 +301,7 @@
         "bundle_container_qzEErQ": {
           "type": "_bundle-container",
           "settings": {},
-          "blocks": {
-            "icon_7irh3Q": {
-              "type": "icon",
-              "name": "t:names.icon",
-              "settings": {
-                "icon": "price_tag",
-                "width": 24,
-                "link": "",
-                "open_in_new_tab": false,
-                "icon_color": ""
-              },
-              "blocks": {}
-            }
-          },
-          "block_order": [
-            "icon_7irh3Q"
-          ]
+          "blocks": {}
         },
         "grid_container_9N8aRA": {
           "type": "_grid-container",
@@ -487,7 +471,6 @@
       "settings": {
         "bundle_width": 30,
         "column_gap": 24,
-        "drawer_button_label": "View your bundle",
         "background_color": "",
         "padding-block-start": 24,
         "padding-block-end": 24
